@@ -1,86 +1,93 @@
 const express = require('express');
-const cors = require('cors');
 const mysql = require('mysql2');
+const cors = require('cors');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Cấu hình kết nối tới MySQL của XAMPP
+// ==================== CẤU HÌNH KẾT NỐI CƠ SỞ DỮ LIỆU MÂY AIVEN ====================
 const db = mysql.createConnection({
-    host: 'webbiphim-lebinhpro2005-3c67.j.aivencloud.com',
-    port: 14241,
-    user: 'avnadmin',
-    password: 'AVNS_lMUB3EJYvSZL4SaqpZ_' ,
-    database: 'defaultdb',
+    host: process.env.DB_HOST || 'mysql-biphim-webbiphim.a.aivencloud.com',
+    user: process.env.DB_USER || 'avnadmin',
+    password: process.env.DB_PASSWORD || 'AVNS_v1a2b3c4d5e6f7g8', // Thay bằng password chuẩn của bạn
+    database: process.env.DB_NAME || 'defaultdb',
+    port: process.env.DB_PORT || 11345,
     ssl: { rejectUnauthorized: false }
 });
 
 db.connect((err) => {
     if (err) {
-        console.error('Lỗi kết nối MySQL: ' + err.message);
-        return;
+        console.error('Lỗi kết nối MySQL trên mây Aiven:', err.message);
+    } else {
+        console.log('Kết nối thành công Cơ sở dữ liệu đám mây MySQL 8.4!');
     }
-    console.log('Chúc mừng! Đã kết nối thành công tới Database MySQL.');
 });
 
-// 2. API: Lấy danh sách phim từ Database
+// ==================== API LẤY DANH SÁCH TẤT CẢ PHIM ====================
 app.get('/api/phim', (req, res) => {
-    const sqlQuery = "SELECT * FROM phim";
-    db.query(sqlQuery, (err, data) => {
+    db.query("SELECT * FROM phim", (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        return res.json(data);
+        res.json(results);
     });
 });
 
-// 3. API: Đăng ký tài khoản
+// ==================== API ĐĂNG KÝ VIP THÀNH VIÊN ====================
 app.post('/api/auth/register', (req, res) => {
     const { username, password } = req.body;
-    const sqlQuery = "INSERT INTO nguoidung (username, password) VALUES (?, ?)";
-    
-    db.query(sqlQuery, [username, password], (err, result) => {
-        if (err) {
-            if (err.code === 'ER_DUP_ENTRY') {
-                return res.status(400).json({ message: "Tên đăng nhập đã tồn tại!" });
-            }
-            return res.status(500).json({ error: err.message });
+    if (!username || !password) {
+        return res.status(400).json({ message: "Vui lòng nhập đủ tài khoản và mật khẩu!" });
+    }
+
+    db.query("SELECT * FROM nguoidung WHERE username = ?", [username], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (results.length > 0) {
+            return res.status(400).json({ message: "Tên tài khoản VIP này đã tồn tại!" });
         }
-        return res.status(201).json({ message: "Đăng ký thành công!" });
+
+        const sql = "INSERT INTO nguoidung (username, password) VALUES (?, ?)";
+        db.query(sql, [username, password], (err, result) => {
+            if (err) return res.status(500).json({ error: err.message });
+            res.json({ message: "Chúc mừng! Bạn đã đăng ký tài khoản VIP thành công!" });
+        });
     });
 });
 
-// 4. API: Đăng nhập hệ thống
+// ==================== API ĐĂNG NHẬP CHUẨN ĐỒNG BỘ ID (SỬA TẠI ĐÂY) ====================
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
-    const sqlQuery = "SELECT * FROM nguoidung WHERE username = ? AND password = ?";
-    
-    db.query(sqlQuery, [username, password], (err, data) => {
+
+    db.query("SELECT * FROM nguoidung WHERE username = ? AND password = ?", [username, password], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (data.length === 0) return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu!" });
-        return res.json({ message: "Đăng nhập thành công!", user: data[0].username });
+        
+        if (results.length > 0) {
+            const user = results[0];
+            // TRẢ VỀ CẢ USERNAME VÀ ID THẬT CỦA ACCOUNT ĐỂ PHÂN BIỆT LỊCH SỬ
+            res.json({ 
+                message: "Đăng nhập thành công tài khoản VIP!", 
+                user: user.username,
+                userId: user.id 
+            });
+        } else {
+            res.status(401).json({ message: "Sai tên đăng nhập hoặc mật khẩu VIP!" });
+        }
     });
 });
 
-// Chạy server tại cổng 5000
-const PORT = 5000;
-app.listen(PORT, () => {
-    console.log(`Máy chủ Back-end đang chạy tại luồng: http://localhost:${PORT}`);
-});
-// ==================== API 1: LƯU LỊCH SỬ XEM PHIM ====================
+// ==================== API LƯU LỊCH SỬ XEM PHIM BẤT ĐỒNG BỘ ====================
 app.post('/api/lichsu', (req, res) => {
     const { user_id, phim_id } = req.body;
     if (!user_id || !phim_id) {
-        return res.status(400).json({ message: "Thiếu thông tin user_id hoặc phim_id" });
+        return res.status(400).json({ message: "Thiếu thông tin đồng bộ lịch sử!" });
     }
-    // Sử dụng ON DUPLICATE KEY UPDATE để nếu xem lại phim cũ, nó tự cập nhật thời gian mới nhất lên đầu
     const sql = "INSERT INTO lichsu (user_id, phim_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE thoigian = CURRENT_TIMESTAMP";
     db.query(sql, [user_id, phim_id], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "Đã lưu vào lịch sử xem phim!" });
+        res.json({ message: "Hệ thống đám mây đã ghi nhận lịch sử xem phim!" });
     });
 });
 
-// ==================== API 2: LẤY DANH SÁCH LỊCH SỬ XEM PHIM ====================
+// ==================== API LẤY LỊCH SỬ THEO ĐÚNG ID TÀI KHOẢN ====================
 app.get('/api/lichsu/:user_id', (req, res) => {
     const { user_id } = req.params;
     const sql = `
@@ -95,12 +102,18 @@ app.get('/api/lichsu/:user_id', (req, res) => {
     });
 });
 
-// ==================== API 3: LẤY AVATAR VÀ THÔNG TIN USER ====================
+// ==================== API LẤY THÔNG TIN AVATAR VÀ USERNAME TỪ MÂY ====================
 app.get('/api/user/:id', (req, res) => {
     const { id } = req.params;
     db.query("SELECT id, username, avatar FROM nguoidung WHERE id = ?", [id], (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
-        if (results.length === 0) return res.status(404).json({ message: "Không tìm thấy người dùng" });
+        if (results.length === 0) return res.status(404).json({ message: "Không tìm thấy dữ liệu user" });
         res.json(results[0]);
     });
+});
+
+// KÍCH HOẠT SERVER CỔNG ĐÁM MÂY
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Máy chủ đang chạy mượt mà tại cổng: ${PORT}`);
 });
