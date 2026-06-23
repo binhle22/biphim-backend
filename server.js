@@ -8,9 +8,10 @@ app.use(express.json());
 
 // ==================== CẤU HÌNH KẾT NỐI AN TOÀN QUA BIẾN MÔI TRƯỜNG ====================
 const db = mysql.createConnection({
-    host: process.env.DB_HOST || 'mysql-biphim-webbiphim.a.aivencloud.com',
+    // Đã cập nhật chính xác host đám mây Aiven của Long
+    host: process.env.DB_HOST || 'webbiphim-lebinhpro2005-3c67.j.aivencloud.com', 
     user: process.env.DB_USER || 'avnadmin',
-    password: process.env.DB_PASSWORD, // Sử dụng biến môi trường ẩn nạp từ Render
+    password: process.env.DB_PASSWORD, // Sử dụng biến môi trường DB_PASSWORD đã cấu hình trên Render
     database: process.env.DB_NAME || 'defaultdb',
     port: process.env.DB_PORT || 11345,
     ssl: { rejectUnauthorized: false }
