@@ -6,11 +6,11 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// ==================== CẤU HÌNH KẾT NỐI CƠ SỞ DỮ LIỆU MÂY AIVEN ====================
+// ==================== CẤU HÌNH KẾT NỐI GÁN CỨNG MẬT KHẨU THỦ CÔNG ====================
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'mysql-biphim-webbiphim.a.aivencloud.com',
     user: process.env.DB_USER || 'avnadmin',
-    password: process.env.DB_PASSWORD || 'ĐIỀN_MẬT_KHẨU_AIVEN_CỦA_BẠN_VÀO_ĐÂY', // <--- NHỚ ĐIỀN MẬT KHẨU THẬT VÀO ĐÂY NHÉ LONG!
+    password: process.env.DB_PASSWORD || 'AVNS_lMUB3EJYvSZL4SaqpZ_', // Đã điền mật khẩu thủ công của Long
     database: process.env.DB_NAME || 'defaultdb',
     port: process.env.DB_PORT || 11345,
     ssl: { rejectUnauthorized: false }
