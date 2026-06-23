@@ -6,12 +6,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 1. Cấu hình kết nối tới MySQL của XAMPP
+// 1. Cấu hình kết nối tới MySQL của Aiven Đám Mây
 const db = mysql.createConnection({
     host: 'webbiphim-lebinhpro2005-3c67.j.aivencloud.com',
     port: 14241,
     user: 'avnadmin',
-    password: 'AVNS_lMUB3EJYvSZL4SaqpZ_' ,
+    password: 'AVNS_lMUB3EJYvSZL4SaqpZ_',
     database: 'defaultdb',
     ssl: { rejectUnauthorized: false }
 });
@@ -49,7 +49,7 @@ app.post('/api/auth/register', (req, res) => {
     });
 });
 
-// 4. API: Đăng nhập hệ thống
+// 4. API: Đăng nhập hệ thống (ĐÃ CẬP NHẬT TRẢ VỀ USERID ĐỘNG)
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
     const sqlQuery = "SELECT * FROM nguoidung WHERE username = ? AND password = ?";
@@ -57,7 +57,43 @@ app.post('/api/auth/login', (req, res) => {
     db.query(sqlQuery, [username, password], (err, data) => {
         if (err) return res.status(500).json({ error: err.message });
         if (data.length === 0) return res.status(400).json({ message: "Sai tài khoản hoặc mật khẩu!" });
-        return res.json({ message: "Đăng nhập thành công!", user: data[0].username });
+        
+        // TRẢ VỀ CẢ USERNAME VÀ ID ĐỂ PHÂN TÁCH LỊCH SỬ XEM PHIM TRÊN FRONT-END
+        return res.json({ 
+            message: "Đăng nhập thành công!", 
+            user: data[0].username,
+            userId: data[0].id // <-- QUAN TRỌNG: Thêm trường này để lưu vào localStorage
+        });
+    });
+});
+
+// 5. API: Lưu lịch sử xem phim
+app.post('/api/lichsu', (req, res) => {
+    const { user_id, phim_id } = req.body;
+    if (!user_id || !phim_id) {
+        return res.status(400).json({ message: "Thiếu thông tin để lưu lịch sử!" });
+    }
+    const sqlQuery = "INSERT INTO lichsu (user_id, phim_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE thoigian = CURRENT_TIMESTAMP";
+    
+    db.query(sqlQuery, [user_id, phim_id], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json({ message: "Đã lưu lịch sử xem phim thành công!" });
+    });
+});
+
+// 6. API: Lấy danh sách lịch sử xem phim của từng User
+app.get('/api/lichsu/:user_id', (req, res) => {
+    const { user_id } = req.params;
+    const sqlQuery = `
+        SELECT ls.thoigian, p.id, p.ten, p.anh, p.loai, p.chatLuong 
+        FROM lichsu ls 
+        JOIN phim p ON ls.phim_id = p.id 
+        WHERE ls.user_id = ? 
+        ORDER BY ls.thoigian DESC`;
+        
+    db.query(sqlQuery, [user_id], (err, data) => {
+        if (err) return res.status(500).json({ error: err.message });
+        return res.json(data);
     });
 });
 
