@@ -10,7 +10,7 @@ app.use(express.json());
 const db = mysql.createConnection({
     host: process.env.DB_HOST || 'mysql-biphim-webbiphim.a.aivencloud.com',
     user: process.env.DB_USER || 'avnadmin',
-    password: process.env.DB_PASSWORD || 'AVNS_v1a2b3c4d5e6f7g8', // Thay bằng password chuẩn của bạn
+    password: process.env.DB_PASSWORD || 'ĐIỀN_MẬT_KHẨU_AIVEN_CỦA_BẠN_VÀO_ĐÂY', // <--- NHỚ ĐIỀN MẬT KHẨU THẬT VÀO ĐÂY NHÉ LONG!
     database: process.env.DB_NAME || 'defaultdb',
     port: process.env.DB_PORT || 11345,
     ssl: { rejectUnauthorized: false }
@@ -53,7 +53,7 @@ app.post('/api/auth/register', (req, res) => {
     });
 });
 
-// ==================== API ĐĂNG NHẬP CHUẨN ĐỒNG BỘ ID (SỬA TẠI ĐÂY) ====================
+// ==================== API ĐĂNG NHẬP CHUẨN ĐỒNG BỘ ID ====================
 app.post('/api/auth/login', (req, res) => {
     const { username, password } = req.body;
 
@@ -62,7 +62,6 @@ app.post('/api/auth/login', (req, res) => {
         
         if (results.length > 0) {
             const user = results[0];
-            // TRẢ VỀ CẢ USERNAME VÀ ID THẬT CỦA ACCOUNT ĐỂ PHÂN BIỆT LỊCH SỬ
             res.json({ 
                 message: "Đăng nhập thành công tài khoản VIP!", 
                 user: user.username,
