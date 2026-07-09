@@ -102,3 +102,20 @@ const PORT = 5000;
 app.listen(PORT, () => {
     console.log(`Máy chủ Back-end đang chạy tại luồng: http://localhost:${PORT}`);
 });
+app.post('/api/nap-tien', (req, res) => {
+    const { userId, soTien } = req.body;
+    const sql = "UPDATE nguoidung SET tien_ao = tien_ao + ? WHERE id = ?";
+    db.query(sql, [soTien, userId], (err, result) => {
+        if(err) return res.status(500).send(err);
+        res.send({ message: "Nạp tiền thành công!" });
+    });
+});
+app.post('/api/mua-vip', (req, res) => {
+    const { userId } = req.body;
+    // Kiểm tra tiền trước, nếu đủ thì trừ tiền và update loại tài khoản
+    const sql = "UPDATE nguoidung SET tien_ao = tien_ao - 100000, loai_tk = 'vip' WHERE id = ? AND tien_ao >= 100000";
+    db.query(sql, [userId], (err, result) => {
+        if(result.affectedRows > 0) res.send({ success: true });
+        else res.send({ success: false, message: "Không đủ tiền hoặc lỗi!" });
+    });
+});
