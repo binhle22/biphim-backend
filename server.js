@@ -110,9 +110,19 @@ app.post('/api/nap-tien', (req, res) => {
         res.send({ message: "Nạp tiền thành công!" });
     });
 });
+// API Nạp tiền
+app.post('/api/nap-tien', (req, res) => {
+    const { userId, soTien } = req.body;
+    db.query("UPDATE nguoidung SET tien_ao = tien_ao + ? WHERE id = ?", [soTien, userId], (err, result) => {
+        if(err) return res.status(500).send(err);
+        res.send({ message: "Nạp tiền thành công!" });
+    });
+});
+
+// API Mua gói VIP (100.000 xu)
 app.post('/api/mua-vip', (req, res) => {
     const { userId } = req.body;
-    // Kiểm tra tiền trước, nếu đủ thì trừ tiền và update loại tài khoản
+    // Kiểm tra và trừ tiền, đồng thời nâng cấp tài khoản
     const sql = "UPDATE nguoidung SET tien_ao = tien_ao - 100000, loai_tk = 'vip' WHERE id = ? AND tien_ao >= 100000";
     db.query(sql, [userId], (err, result) => {
         if(result.affectedRows > 0) res.send({ success: true });
