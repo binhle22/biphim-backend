@@ -121,24 +121,27 @@ return res.json({
 
 app.post('/api/mua-vip', (req, res) => {
     const { userId } = req.body;
-    // Câu lệnh SQL: Trừ 100.000 xu và đổi loại tài khoản thành 'vip'
-    const sql = "UPDATE nguoidung SET tien_ao = tien_ao - 100000, loai_tk = 'vip' WHERE id = ? AND tien_ao >= 100000";
+    const giaVip = 100000; // Định nghĩa giá VIP
+
+    const sql = "UPDATE nguoidung SET tien_ao = tien_ao - ?, loai_tk = 'vip' WHERE id = ? AND tien_ao >= ?";
     
-    db.query(sql, [userId], (err, result) => {
+    db.query(sql, [giaVip, userId, giaVip], (err, result) => {
         if (err) return res.status(500).json({ error: err.message });
+
         if (result.affectedRows > 0) {
-            return res.json({ success: true, message: "Nâng cấp VIP thành công!" });
+            // Nâng cấp thành công -> Mới ghi log vào đây
+            const sqlLog = "INSERT INTO giaodich (user_id, so_tien, loai_gd) VALUES (?, ?, 'Nang cap VIP')";
+            db.query(sqlLog, [userId, giaVip], (errLog, resultLog) => {
+                if (errLog) console.error("Lỗi ghi log:", errLog); // Ghi log lỗi nếu có
+                return res.json({ success: true, message: "Nâng cấp VIP thành công!" });
+            });
         } else {
             return res.status(400).json({ success: false, message: "Không đủ xu hoặc tài khoản đã là VIP!" });
         }
-        const sqlLog = "INSERT INTO giaodich (user_id, so_tien, loai_gd) VALUES (?, ?, 'Nang cap VIP')";
-    db.query(sqlLog, [userId, soTien], (err, result) => {
-        return res.json({ message: "Nâng cấp VIP thành công!" });
     });
-    });
-    
-    
 });
+    
+    
 app.post('/api/auth/doi-mat-khau', (req, res) => {
     const { userId, oldPassword, newPassword } = req.body;
     // ... code kiểm tra và update mật khẩu ...
