@@ -132,6 +132,10 @@ app.post('/api/mua-vip', (req, res) => {
             return res.status(400).json({ success: false, message: "Không đủ xu hoặc tài khoản đã là VIP!" });
         }
     });
+    const sqlLog = "INSERT INTO giaodich (user_id, so_tien, loai_gd) VALUES (?, ?, 'Nang cap VIP')";
+    db.query(sqlLog, [userId, soTien], (err, result) => {
+        return res.json({ message: "Nâng cấp VIP thành công!" });
+    });
 });
 app.post('/api/auth/doi-mat-khau', (req, res) => {
     const { userId, oldPassword, newPassword } = req.body;
