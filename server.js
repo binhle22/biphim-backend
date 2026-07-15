@@ -118,18 +118,38 @@ return res.json({
             res.send({ message: "Nạp tiền thành công!" });
         });
     });
-// API: Nâng cấp VIP
+
 app.post('/api/mua-vip', (req, res) => {
     const { userId } = req.body;
-    // Kiểm tra và trừ 100.000 xu, nếu đủ tiền thì update loai_tk thành 'vip'
+    // Câu lệnh SQL: Trừ 100.000 xu và đổi loại tài khoản thành 'vip'
     const sql = "UPDATE nguoidung SET tien_ao = tien_ao - 100000, loai_tk = 'vip' WHERE id = ? AND tien_ao >= 100000";
     
     db.query(sql, [userId], (err, result) => {
-        if(err) return res.status(500).json({ error: err.message });
-        if(result.affectedRows > 0) {
-            res.json({ success: true, message: "Nâng cấp VIP thành công!" });
+        if (err) return res.status(500).json({ error: err.message });
+        if (result.affectedRows > 0) {
+            return res.json({ success: true, message: "Nâng cấp VIP thành công!" });
         } else {
-            res.json({ success: false, message: "Không đủ xu hoặc lỗi!" });
+            return res.status(400).json({ success: false, message: "Không đủ xu hoặc tài khoản đã là VIP!" });
         }
+    });
+});
+app.post('/api/auth/doi-mat-khau', (req, res) => {
+    const { userId, oldPassword, newPassword } = req.body;
+    // ... code kiểm tra và update mật khẩu ...
+    const sqlCheck = "SELECT password FROM nguoidung WHERE id = ?";
+    db.query(sqlCheck, [userId], (err, results) => {
+        if (err) return res.status(500).json({ message: "Lỗi truy vấn DB!" });
+        if (results.length === 0) return res.status(404).json({ message: "Không tìm thấy user!" });
+        
+        if (results[0].password !== oldPassword) {
+            return res.status(400).json({ message: "Mật khẩu cũ không đúng!" });
+        }
+        
+        // Cập nhật mật khẩu mới
+        const sqlUpdate = "UPDATE nguoidung SET password = ? WHERE id = ?";
+        db.query(sqlUpdate, [newPassword, userId], (err, result) => {
+            if (err) return res.status(500).json({ message: "Lỗi cập nhật mật khẩu!" });
+            return res.json({ message: "Đổi mật khẩu thành công!" });
+        });
     });
 });
