@@ -136,6 +136,7 @@ app.post('/api/mua-vip', (req, res) => {
     db.query(sqlLog, [userId, soTien], (err, result) => {
         return res.json({ message: "Nâng cấp VIP thành công!" });
     });
+    
 });
 app.post('/api/auth/doi-mat-khau', (req, res) => {
     const { userId, oldPassword, newPassword } = req.body;
