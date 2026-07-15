@@ -151,5 +151,10 @@ app.post('/api/auth/doi-mat-khau', (req, res) => {
             if (err) return res.status(500).json({ message: "Lỗi cập nhật mật khẩu!" });
             return res.json({ message: "Đổi mật khẩu thành công!" });
         });
+        const sqlLog = "INSERT INTO security_logs (user_id, trang_thai) VALUES (?, 'Thành công')";
+        db.query(sqlLog, [userId], (errLog, resultLog) => {
+            // Sau khi ghi log xong mới trả về phản hồi cho web
+            return res.json({ message: "Đổi mật khẩu và ghi nhật ký thành công!" });
+        });
     });
 });
