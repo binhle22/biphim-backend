@@ -130,7 +130,7 @@ app.post('/api/mua-vip', (req, res) => {
 
         if (result.affectedRows > 0) {
             // Nâng cấp thành công -> Mới ghi log vào đây
-            const sqlLog = "INSERT INTO giaodich (user_id, so_tien, loai_gd) VALUES (?, ?, 'Nang cap VIP')";
+            const sqlLog = "INSERT INTO nangVIP (user_id, so_tien, loai_gd) VALUES (?, ?, 'Nang cap VIP')";
             db.query(sqlLog, [userId, giaVip], (errLog, resultLog) => {
                 if (errLog) console.error("Lỗi ghi log:", errLog); // Ghi log lỗi nếu có
                 return res.json({ success: true, message: "Nâng cấp VIP thành công!" });
@@ -160,7 +160,7 @@ app.post('/api/auth/doi-mat-khau', (req, res) => {
             if (err) return res.status(500).json({ message: "Lỗi cập nhật mật khẩu!" });
             return res.json({ message: "Đổi mật khẩu thành công!" });
         });
-        const sqlLog = "INSERT INTO security_logs (user_id, trang_thai) VALUES (?, 'Thành công')";
+        const sqlLog = "INSERT INTO matkhau (user_id, trang_thai) VALUES (?, 'Thành công')";
         db.query(sqlLog, [userId], (errLog, resultLog) => {
             // Sau khi ghi log xong mới trả về phản hồi cho web
             return res.json({ message: "Đổi mật khẩu và ghi nhật ký thành công!" });
