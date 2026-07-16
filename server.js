@@ -198,3 +198,20 @@ app.get('/api/admin/log-mat-khau', (req, res) => {
         res.json(results);
     });
 });
+// Thêm vào server.js
+app.delete('/api/admin/xoa-user/:id', (req, res) => {
+    const userId = req.params.id;
+    const sql = "DELETE FROM nguoidung WHERE id = ?";
+    db.query(sql, [userId], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Đã xóa thành công" });
+    });
+});
+app.post('/api/admin/them-phim', (req, res) => {
+    const { ten, anh } = req.body;
+    const sql = "INSERT INTO phim (ten_phim, link_anh) VALUES (?, ?)";
+    db.query(sql, [ten, anh], (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "Thêm phim thành công!" });
+    });
+});
