@@ -5,6 +5,7 @@
     const app = express();
     app.use(cors());
     app.use(express.json());
+    app.use(express.static('movieweb'));
 
     // 1. Cấu hình kết nối tới MySQL của Aiven Đám Mây
     const db = mysql.createConnection({
