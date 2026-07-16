@@ -1,6 +1,10 @@
     const express = require('express');
     const cors = require('cors');
     const mysql = require('mysql2');
+    const path = require('path');
+
+// Trỏ ra thư mục cha (..) sau đó vào thư mục TTTN WEB
+app.use(express.static(path.join(__dirname, '..', 'TTTN WEB')));
 
     const app = express();
     app.use(cors());
