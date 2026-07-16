@@ -1,12 +1,13 @@
     const express = require('express');
     const cors = require('cors');
     const mysql = require('mysql2');
+     const app = express();
     const path = require('path');
 
 // Trỏ ra thư mục cha (..) sau đó vào thư mục TTTN WEB
 app.use(express.static(path.join(__dirname, '..', 'TTTN WEB')));
 
-    const app = express();
+   
     app.use(cors());
     app.use(express.json());
     app.use(express.static('movieweb'));
