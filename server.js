@@ -167,3 +167,28 @@ app.post('/api/auth/doi-mat-khau', (req, res) => {
         });
     });
 });
+// server.js - Thêm các API này vào sau các API khác
+
+// API lấy lịch sử nâng cấp VIP
+app.get('/api/admin/lich-su-vip', (req, res) => {
+    const sql = `SELECT nangVIP.so_tien, nangVIP.ngay_gd, nguoidung.username 
+                 FROM nangVIP 
+                 JOIN nguoidung ON nangVIP.user_id = nguoidung.id 
+                 ORDER BY nangVIP.ngay_gd DESC`;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
+
+// API lấy lịch sử đổi mật khẩu
+app.get('/api/admin/log-mat-khau', (req, res) => {
+    const sql = `SELECT matkhau.thoi_gian_doi, matkhau.trang_thai, nguoidung.username 
+                 FROM matkhau 
+                 JOIN nguoidung ON matkhau.user_id = nguoidung.id 
+                 ORDER BY matkhau.thoi_gian_doi DESC`;
+    db.query(sql, (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results);
+    });
+});
