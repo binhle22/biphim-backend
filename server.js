@@ -209,16 +209,15 @@ app.delete('/api/admin/xoa-user/:id', (req, res) => {
 });
 app.post('/api/admin/them-phim', (req, res) => {
     const { ten, anh, video } = req.body;
-    
-    // Kiểm tra dữ liệu có nhận được không
-    console.log("Dữ liệu nhận được:", { ten, anh, video });
 
+    // Chèn vào các cột bắt buộc, các cột khác để giá trị mặc định
     const sql = "INSERT INTO phim (ten, anh, video, nam, chattluong, loai, you_cau_vip) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
+    // Gán giá trị mặc định cho các cột không có trong form
     db.query(sql, [ten, anh, video, '2026', 'HD', 'Phim Lẻ', 0], (err, result) => {
         if (err) {
-            // Dòng này cực kỳ quan trọng để debug
-            console.error("LỖI SQL:", err); 
+            // Log lỗi ra Terminal để bạn thấy
+            console.error("LỖI DATABASE:", err);
             return res.status(500).json({ error: err.message });
         }
         res.json({ message: "Đã thêm phim thành công!" });
