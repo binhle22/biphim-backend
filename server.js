@@ -208,14 +208,19 @@ app.delete('/api/admin/xoa-user/:id', (req, res) => {
     });
 });
 app.post('/api/admin/them-phim', (req, res) => {
-    // Lưu ý: dùng biến 'video' thay vì 'link' để khớp DB
     const { ten, anh, video } = req.body;
     
-    // Câu lệnh SQL khớp với cột trong bảng 'phim' của bạn
+    // Kiểm tra dữ liệu có nhận được không
+    console.log("Dữ liệu nhận được:", { ten, anh, video });
+
     const sql = "INSERT INTO phim (ten, anh, video) VALUES (?, ?, ?)";
     
     db.query(sql, [ten, anh, video], (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
+        if (err) {
+            // Dòng này cực kỳ quan trọng để debug
+            console.error("LỖI SQL:", err); 
+            return res.status(500).json({ error: err.message });
+        }
         res.json({ message: "Đã thêm phim thành công!" });
     });
 });
