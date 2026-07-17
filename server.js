@@ -211,7 +211,7 @@ app.post('/api/admin/them-phim', (req, res) => {
     const { ten, anh, video } = req.body;
 
     // Chèn vào các cột bắt buộc, các cột khác để giá trị mặc định
-    const sql = "INSERT INTO phim (ten, anh, video, nam, chattluong, loai, you_cau_vip) VALUES (?, ?, ?, ?, ?, ?, ?)";
+    const sql = "INSERT INTO phim (ten, anh, video, nam, chatLuong, loai, yeu_cau_vip) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
     // Gán giá trị mặc định cho các cột không có trong form
     db.query(sql, [ten, anh, video, '2026', 'HD', 'Phim Lẻ', 0], (err, result) => {
