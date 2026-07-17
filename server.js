@@ -213,9 +213,9 @@ app.post('/api/admin/them-phim', (req, res) => {
     // Kiểm tra dữ liệu có nhận được không
     console.log("Dữ liệu nhận được:", { ten, anh, video });
 
-    const sql = "INSERT INTO phim (ten, anh, video) VALUES (?, ?, ?)";
+    const sql = "INSERT INTO phim (ten, anh, video, nam, chattluong, loai, you_cau_vip) VALUES (?, ?, ?, ?, ?, ?, ?)";
     
-    db.query(sql, [ten, anh, video], (err, result) => {
+    db.query(sql, [ten, anh, video, '2026', 'HD', 'Phim Lẻ', 0], (err, result) => {
         if (err) {
             // Dòng này cực kỳ quan trọng để debug
             console.error("LỖI SQL:", err); 
